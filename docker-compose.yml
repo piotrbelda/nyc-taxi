@@ -1,0 +1,11 @@
+name: nyc-taxi
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mlflow
+    ports:
+      - 5432:5432
