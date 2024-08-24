@@ -2,10 +2,14 @@ name: nyc-taxi
 
 services:
   db:
+    container_name: db
+    hostname: db
     image: postgres:latest
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mlflow
+      POSTGRES_DB: taxi
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - 5432:5432
+      - 5433:5432
