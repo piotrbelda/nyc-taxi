@@ -13,3 +13,13 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - 5433:5432
+
+  mlflow:
+    container_name: mlflow
+    hostname: mlflow
+    build:
+      dockerfile: Dockerfile
+      context: ./docker/mlflow
+    env_file:
+      - ./env/db.env
+      - ./env/mlflow.env
