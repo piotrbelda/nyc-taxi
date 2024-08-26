@@ -8,11 +8,18 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: taxi
+      POSTGRES_DB: postgres
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres-db-volume:/var/lib/postgresql/data
     ports:
-      - 5433:5432
+      - 5432:5432
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
 
   mlflow:
     container_name: mlflow
@@ -27,3 +34,6 @@ services:
       - 8000:8000
     depends_on:
       - db
+
+volumes:
+  postgres-db-volume:
