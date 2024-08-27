@@ -1,0 +1,16 @@
+name: services
+
+services:
+  mlflow:
+    container_name: mlflow
+    hostname: mlflow
+    build:
+      dockerfile: Dockerfile
+      context: ./docker/mlflow
+    env_file:
+      - ./env/db.env
+      - ./env/mlflow.env
+    ports:
+      - 8000:8000
+    depends_on:
+      - db

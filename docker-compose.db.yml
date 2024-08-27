@@ -1,4 +1,4 @@
-name: nyc-taxi
+name: db
 
 services:
   db:
@@ -21,19 +21,19 @@ services:
       start_period: 5s
     restart: always
 
-  mlflow:
-    container_name: mlflow
-    hostname: mlflow
-    build:
-      dockerfile: Dockerfile
-      context: ./docker/mlflow
-    env_file:
-      - ./env/db.env
-      - ./env/mlflow.env
-    ports:
-      - 8000:8000
-    depends_on:
-      - db
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:latest
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 50
+      start_period: 30s
+    restart: always
 
 volumes:
   postgres-db-volume:
