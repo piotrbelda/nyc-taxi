@@ -1,4 +1,4 @@
-name: db
+name: taxi
 
 services:
   db:
@@ -20,11 +20,13 @@ services:
       retries: 5
       start_period: 5s
     restart: always
+    networks:
+      - taxi
 
   redis:
     container_name: redis
     hostname: redis
-    image: redis:latest
+    image: redis:7.2-bookworm
     expose:
       - 6379
     healthcheck:
@@ -34,6 +36,12 @@ services:
       retries: 50
       start_period: 30s
     restart: always
+    networks:
+      - taxi
 
 volumes:
   postgres-db-volume:
+
+networks:
+  taxi:
+    external: true

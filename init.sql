@@ -1,7 +1,10 @@
--- init database
+-- taxi db
 CREATE DATABASE taxi;
 \c taxi
-
--- init schema
 CREATE SCHEMA mlflow;
+
+-- airflow db
+CREATE DATABASE airflow;
+\c airflow
+CREATE USER airflow WITH PASSWORD 'airflow' SUPERUSER;
 CREATE SCHEMA airflow;
