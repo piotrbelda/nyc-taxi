@@ -1,4 +1,4 @@
-name: taxi
+name: airflow
 
 x-airflow-common:
   &airflow-common
@@ -17,12 +17,14 @@ x-airflow-common:
     - ./src/config:/opt/airflow/config
     - ./src/plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:0"
-  depends_on:
-    &airflow-common-depends-on
-    redis:
-      condition: service_healthy
-    db:
-      condition: service_healthy
+  # depends_on:
+  #   &airflow-common-depends-on
+  #   redis:
+  #     condition: service_healthy
+  #   db:
+  #     condition: service_healthy
+  networks:
+    - taxi
 
 services:
   airflow-webserver:
@@ -37,10 +39,10 @@ services:
       retries: 5
       start_period: 30s
     restart: always
-    depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
+    # depends_on:
+    #   <<: *airflow-common-depends-on
+    #   airflow-init:
+    #     condition: service_completed_successfully
 
   airflow-scheduler:
     <<: *airflow-common
@@ -52,10 +54,10 @@ services:
       retries: 5
       start_period: 30s
     restart: always
-    depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
+    # depends_on:
+    #   <<: *airflow-common-depends-on
+    #   airflow-init:
+    #     condition: service_completed_successfully
 
   airflow-worker:
     <<: *airflow-common
@@ -72,10 +74,10 @@ services:
       <<: *airflow-common-env
       DUMB_INIT_SETSID: "0"
     restart: always
-    depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
+    # depends_on:
+    #   <<: *airflow-common-depends-on
+    #   airflow-init:
+    #     condition: service_completed_successfully
 
   airflow-triggerer:
     <<: *airflow-common
@@ -87,13 +89,15 @@ services:
       retries: 5
       start_period: 30s
     restart: always
-    depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
+    # depends_on:
+    #   <<: *airflow-common-depends-on
+    #   airflow-init:
+    #     condition: service_completed_successfully
 
   airflow-init:
     <<: *airflow-common
+    container_name: airflow-init
+    hostname: airflow-init
     entrypoint: /bin/bash
     env_file:
       - ./env/airflow.env
@@ -155,6 +159,8 @@ services:
     user: "0:0"
     volumes:
       - ${AIRFLOW_PROJ_DIR:-.}:/sources
+    networks:
+      - taxi
 
   airflow-cli:
     <<: *airflow-common
@@ -182,10 +188,11 @@ services:
       retries: 5
       start_period: 30s
     restart: always
-    depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
+    # depends_on:
+    #   <<: *airflow-common-depends-on
+    #   airflow-init:
+    #     condition: service_completed_successfully
 
 networks:
   taxi:
+    external: true
