@@ -1,3 +1,9 @@
 #!/bin/bash
 
 export COMPOSE_FILE="$(pwd)/docker-compose.${1}.yml"
+
+if [[ ${1} -eq "airflow" ]]
+then
+    export AIRFLOW_UID=$(id -u)
+    export AIRFLOW_GID=0
+fi
