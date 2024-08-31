@@ -6,4 +6,5 @@ if [[ ${1} -eq "airflow" ]]
 then
     export AIRFLOW_UID=$(id -u)
     export AIRFLOW_GID=0
+    export AIRFLOW_PROJ_DIR="$(pwd)/src"
 fi
