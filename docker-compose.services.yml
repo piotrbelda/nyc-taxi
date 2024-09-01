@@ -12,5 +12,11 @@ services:
       - ./env/mlflow.env
     ports:
       - 8000:8000
-    depends_on:
-      - db
+    networks:
+      - taxi
+    # depends_on:
+    #   - db
+
+networks:
+  taxi:
+    external: true
