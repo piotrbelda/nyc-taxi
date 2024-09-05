@@ -2,7 +2,9 @@ name: airflow
 
 x-airflow-common:
   &airflow-common
-  image: apache/airflow:2.10.0
+  build:
+    dockerfile: Dockerfile
+    context: ./docker/airflow
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
