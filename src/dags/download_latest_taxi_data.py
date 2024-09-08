@@ -44,8 +44,13 @@ with DAG(
     file_name = Path(latest_file_url).name
     download_data = BashOperator(
         task_id='download_data',
-        bash_command=f'wget {latest_file_url} -O $(pwd)/{file_name}',
+        bash_command=f'curl {latest_file_url} -o /tmp/{file_name}',
     )
 
-    download_data
+    sleep = BashOperator(
+        task_id='sleep_1',
+        bash_command=f'sleep 1',
+    )
+
+    download_data >> sleep
  
