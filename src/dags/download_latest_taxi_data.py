@@ -70,7 +70,7 @@ with DAG(
 
     create_connection()
 
-    session = DBSession.session
+    session = DBSession().session
     connections = session.query(Connection).all()
 
     file_sensor = FileSensor(
