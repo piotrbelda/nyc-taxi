@@ -12,7 +12,7 @@ from airflow.sensors.filesystem import FileSensor
 from airflow.utils.session import provide_session
 from scrapy import Selector
 
-from test import VAR
+from utils import DBSession
 
 TAXI_DATA_PAGE_URL = 'https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page'
 
@@ -70,6 +70,9 @@ with DAG(
 
     create_connection()
 
+    session = DBSession.session
+    connections = session.query(Connection).all()
+
     file_sensor = FileSensor(
         task_id='file_sensor',
         filepath=str(file_path.parent),
@@ -78,7 +81,7 @@ with DAG(
 
     sleep = BashOperator(
         task_id='sleep_1',
-        bash_command=f'sleep 1',
+        bash_command=f'sleep {len(connections * 5)}',
     )
 
     download_data >> file_sensor >> sleep
