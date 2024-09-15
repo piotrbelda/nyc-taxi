@@ -12,6 +12,8 @@ from airflow.sensors.filesystem import FileSensor
 from airflow.utils.session import provide_session
 from scrapy import Selector
 
+from test import VAR
+
 TAXI_DATA_PAGE_URL = 'https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page'
 
 
