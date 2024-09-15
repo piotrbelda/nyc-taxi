@@ -115,9 +115,9 @@ services:
     <<: *airflow-common
     container_name: airflow-init
     hostname: airflow-init
-    entrypoint: /bin/bash
     env_file:
       - ./env/airflow.env
+    entrypoint: /bin/bash
     command:
       - -c
       - |
@@ -163,8 +163,8 @@ services:
           echo "   https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#before-you-begin"
           echo
         fi
-        mkdir -p /sources/logs /sources/dags /sources/plugins /sources/code
-        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+        mkdir -p /sources/{logs,dags,plugins,code}
+        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins,code}
         exec /entrypoint airflow version
     environment:
       <<: *airflow-common-env
