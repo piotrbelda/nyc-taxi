@@ -2,6 +2,7 @@ CREATE DATABASE taxi;
 \c taxi
 CREATE SCHEMA mlflow;
 CREATE SCHEMA airflow;
+CREATE SCHEMA data;
 
 CREATE USER airflow WITH PASSWORD 'airflow' SUPERUSER;
 ALTER SCHEMA airflow OWNER TO airflow;

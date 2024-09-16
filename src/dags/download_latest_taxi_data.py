@@ -5,9 +5,11 @@ from pathlib import Path
 from typing import Any, Tuple
 
 import httpx
+import pandas as pd
 from airflow.models.dag import DAG
 from airflow.models.connection import Connection
 from airflow.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
 from airflow.sensors.filesystem import FileSensor
 from scrapy import Selector
 from sqlalchemy.orm import Session
@@ -41,6 +43,17 @@ def create_connection(session: Session, **kwargs: Any) -> Connection:
         session.commit()
 
     return connection
+
+
+def upload_file(file_path: Path) -> dict:
+    df = pd.read_parquet(str(file_path)).iloc[:1000]
+    df.to_sql(
+        name='trip',
+        schema='data',
+        if_exists='append',
+        chunksize=100,
+    )
+    return {}
 
 
 with DAG(
@@ -84,5 +97,11 @@ with DAG(
         bash_command='sleep 3',
     )
 
-    download_data >> file_sensor >> sleep
+    uploader = PythonOperator(
+        task_id='upload_file',
+        python_callable=upload_file,
+        op_args=[file_path],
+    )
+
+    download_data >> file_sensor >> sleep >> uploader
  
