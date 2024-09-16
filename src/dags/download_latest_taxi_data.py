@@ -2,19 +2,22 @@ import re
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Tuple
+from typing import Any, Tuple
 
 import httpx
 from airflow.models.dag import DAG
 from airflow.models.connection import Connection
 from airflow.operators.bash import BashOperator
 from airflow.sensors.filesystem import FileSensor
-from airflow.utils.session import provide_session
 from scrapy import Selector
+from sqlalchemy.orm import Session
 
 from utils import DBSession
 
 TAXI_DATA_PAGE_URL = 'https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page'
+
+tmp_dir = tempfile.gettempdir()
+session = DBSession().session
 
 
 def sort_by_year_month(s: str) -> Tuple[int, int]:
@@ -30,35 +33,30 @@ def get_latest_taxi_file_hyperlink() -> list[str]:
     return hyperlinks[-1]
 
 
-tmp_dir = tempfile.gettempdir()
+def create_connection(session: Session, **kwargs: Any) -> Connection:
+    connection = Connection(**kwargs)
 
-@provide_session
-def create_connection(session=None):
-    conn = Connection(
-        conn_id='file_path',
-        conn_type='fs',
-        host=tmp_dir,
-    )
-
-    if not session.query(Connection).filter(Connection.conn_id == conn.conn_id).first():
-        session.add(conn)
+    if not session.query(Connection).filter(Connection.conn_id == connection.conn_id).first():
+        session.add(connection)
         session.commit()
 
+    return connection
+
+
 with DAG(
-    dag_id='test',
+    dag_id='load_taxi_data',
     default_args={
         'depends_on_past': False,
-        'email': ['piotrek.belda@wp.pl'],
         "email_on_failure": False,
         "email_on_retry": False,
         "retries": 1,
         "retry_delay": timedelta(minutes=5),
     },
-    description='A simple tutorial DAG',
+    description='Load latest NYC taxi data',
     schedule=timedelta(days=1),
     start_date=datetime(2024, 1, 1),
     catchup=False,
-    tags=["example"],
+    tags=["load"],
 ):
     latest_file_url = get_latest_taxi_file_hyperlink()
     file_path = Path(tmp_dir) / Path(latest_file_url).name
@@ -68,20 +66,22 @@ with DAG(
         bash_command=f'curl {latest_file_url} -o {str(file_path)}',
     )
 
-    create_connection()
-
-    session = DBSession().session
-    connections = session.query(Connection).all()
+    file_connection = create_connection(
+        session,
+        conn_id='file_path',
+        conn_type='fs',
+        host=tmp_dir,
+    )
 
     file_sensor = FileSensor(
         task_id='file_sensor',
         filepath=str(file_path.parent),
-        fs_conn_id='file_path',
+        fs_conn_id=file_connection.conn_id,
     )
 
     sleep = BashOperator(
         task_id='sleep_1',
-        bash_command=f'sleep {len(connections * 5)}',
+        bash_command='sleep 3',
     )
 
     download_data >> file_sensor >> sleep
