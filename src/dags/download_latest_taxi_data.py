@@ -45,13 +45,14 @@ def create_connection(session: Session, **kwargs: Any) -> Connection:
     return connection
 
 
-def upload_file(file_path: Path) -> dict:
-    df = pd.read_parquet(str(file_path)).iloc[:1000]
+def upload_file(file_path: Path, session: Session) -> dict:
+    df = pd.read_parquet(str(file_path)).iloc[:10000]
     df.to_sql(
         name='trip',
+        con=session.get_bind(),
         schema='data',
         if_exists='append',
-        chunksize=100,
+        chunksize=1000,
     )
     return {}
 
@@ -100,7 +101,7 @@ with DAG(
     uploader = PythonOperator(
         task_id='upload_file',
         python_callable=upload_file,
-        op_args=[file_path],
+        op_args=[file_path, session],
     )
 
     download_data >> file_sensor >> sleep >> uploader
