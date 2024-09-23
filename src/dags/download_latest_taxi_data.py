@@ -14,12 +14,12 @@ from airflow.sensors.filesystem import FileSensor
 from scrapy import Selector
 from sqlalchemy.orm import Session
 
-from utils import DBSession
+from session import AirflowSession
 
 TAXI_DATA_PAGE_URL = 'https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page'
 
 tmp_dir = tempfile.gettempdir()
-session = DBSession().session
+session = AirflowSession().session
 
 
 def sort_by_year_month(s: str) -> Tuple[int, int]:
