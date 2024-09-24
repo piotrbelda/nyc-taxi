@@ -1,6 +1,5 @@
 import os
 import re
-from abc import ABC, abstractmethod
 from typing import Any
 
 from sqlalchemy import create_engine
@@ -18,16 +17,17 @@ class SessionMeta(type):
         return cls._instances[session_name]
 
 
-class DBSession(ABC, metaclass=SessionMeta):
-    def __init__(self) -> None:
-        engine = create_engine(self.get_uri())
+class DBSession(metaclass=SessionMeta):
+    def __init__(self, uri: str) -> None:
+        engine = create_engine(uri)
         self.session: Session = sessionmaker(engine).__call__()
-
-    @abstractmethod
-    def get_uri(self) -> str:
-        pass
 
 
 class AirflowSession(DBSession):
-    def get_uri(self) -> str:
-        return os.environ['AIRFLOW__DATABASE__SQL_ALCHEMY_CONN']
+    def __init__(self) -> None:
+        super().__init__(os.environ['AIRFLOW__DATABASE__SQL_ALCHEMY_CONN'])
+
+
+# class TaxiSession(DBSession):
+#     def __init__(self) -> None:
+#         super().__init__(os.environ['AIRFLOW__DATABASE__SQL_ALCHEMY_CONN'])
