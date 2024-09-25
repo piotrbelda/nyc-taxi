@@ -10,7 +10,7 @@ class SessionMeta(type):
     _instances = {}
 
     def __call__(cls, *args, **kwargs) -> Any:
-        session_name = re.search('(\w+)([A-Z]\w+)', cls.__class__.__name__).group(1).lower()
+        session_name = re.search(r'(\w+)[A-Z]', cls.__name__).group(1).lower()
         if cls._instances.get(session_name) is None:
             instance = super().__call__(*args, **kwargs)
             cls._instances[session_name] = instance
@@ -28,6 +28,6 @@ class AirflowSession(DBSession):
         super().__init__(os.environ['AIRFLOW__DATABASE__SQL_ALCHEMY_CONN'])
 
 
-# class TaxiSession(DBSession):
-#     def __init__(self) -> None:
-#         super().__init__(os.environ['AIRFLOW__DATABASE__SQL_ALCHEMY_CONN'])
+class TaxiSession(DBSession):
+    def __init__(self) -> None:
+        super().__init__(os.environ['POSTGRES_URI'])

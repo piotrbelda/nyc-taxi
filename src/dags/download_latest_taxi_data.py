@@ -14,12 +14,13 @@ from airflow.sensors.filesystem import FileSensor
 from scrapy import Selector
 from sqlalchemy.orm import Session
 
-from session import AirflowSession
+from session import AirflowSession, TaxiSession
 
 TAXI_DATA_PAGE_URL = 'https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page'
 
 tmp_dir = tempfile.gettempdir()
-session = AirflowSession().session
+airflow_session = AirflowSession().session
+taxi_session = TaxiSession().session
 
 
 def sort_by_year_month(s: str) -> Tuple[int, int]:
@@ -46,11 +47,10 @@ def create_connection(session: Session, **kwargs: Any) -> Connection:
 
 
 def upload_file(file_path: Path, session: Session) -> dict:
-    df = pd.read_parquet(str(file_path)).iloc[:10000]
+    df = pd.read_parquet(str(file_path)).iloc[:20000]
     df.to_sql(
         name='trip',
         con=session.get_bind(),
-        schema='data',
         if_exists='append',
         chunksize=1000,
     )
@@ -81,7 +81,7 @@ with DAG(
     )
 
     file_connection = create_connection(
-        session,
+        airflow_session,
         conn_id='file_path',
         conn_type='fs',
         host=tmp_dir,
@@ -101,7 +101,7 @@ with DAG(
     uploader = PythonOperator(
         task_id='upload_file',
         python_callable=upload_file,
-        op_args=[file_path, session],
+        op_args=[file_path, taxi_session],
     )
 
     download_data >> file_sensor >> sleep >> uploader
