@@ -6,6 +6,7 @@ from typing import Any, Tuple
 
 import httpx
 import pandas as pd
+from pyarrow.parquet import ParquetFile
 from airflow.models.dag import DAG
 from airflow.models.connection import Connection
 from airflow.operators.bash import BashOperator
@@ -13,7 +14,6 @@ from airflow.operators.python import PythonOperator
 from airflow.sensors.filesystem import FileSensor
 from scrapy import Selector
 from sqlalchemy.orm import Session
-
 from session import AirflowSession, TaxiSession
 
 TAXI_DATA_PAGE_URL = 'https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page'
@@ -47,13 +47,10 @@ def create_connection(session: Session, **kwargs: Any) -> Connection:
 
 
 def upload_file(file_path: Path, session: Session) -> dict:
-    df = pd.read_parquet(str(file_path)).iloc[:20000]
-    df.to_sql(
-        name='trip',
-        con=session.get_bind(),
-        if_exists='append',
-        chunksize=1000,
-    )
+    parquet = ParquetFile(file_path)
+    for batch in parquet.iter_batches(batch_size=10000):
+        df: pd.DataFrame = batch.to_pandas()
+        df.to_sql(name='trip', con=session.get_bind(), if_exists='append')
     return {}
 
 
@@ -87,22 +84,17 @@ with DAG(
         host=tmp_dir,
     )
 
-    file_sensor = FileSensor(
+    check_file_exists = FileSensor(
         task_id='file_sensor',
         filepath=str(file_path.parent),
         fs_conn_id=file_connection.conn_id,
     )
 
-    sleep = BashOperator(
-        task_id='sleep_1',
-        bash_command='sleep 3',
-    )
-
-    uploader = PythonOperator(
+    upload_data = PythonOperator(
         task_id='upload_file',
         python_callable=upload_file,
         op_args=[file_path, taxi_session],
     )
 
-    download_data >> file_sensor >> sleep >> uploader
+    download_data >> check_file_exists >> upload_data
  
