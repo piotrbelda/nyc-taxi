@@ -6,6 +6,7 @@ Base = declarative_base()
 
 class Trip(Base):
     __tablename__ = 'trip'
+    __table_args__ = {'schema': 'data'}
 
     id = Column(Integer, primary_key=True, unique=True)
     vendor_id = Column(Integer)

@@ -17,6 +17,22 @@ services:
     # depends_on:
     #   - db
 
+  migration:
+    container_name: migration
+    hostname: migration
+    build:
+      dockerfile: Dockerfile
+      context: ./docker/alembic
+    env_file:
+      - ./env/db.env
+    volumes:
+      - ./alembic:/src/alembic
+      - ./alembic.ini:/src/alembic.ini
+      - ./src/code/model:/src/src/code/model
+    command: alembic upgrade head
+    networks:
+      - taxi
+
 networks:
   taxi:
     external: true
