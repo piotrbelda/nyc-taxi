@@ -6,6 +6,6 @@ COPY ./requirements.txt /tmp
 
 RUN pip install -r /tmp/requirements.txt
 
-RUN mkdir /src
+RUN mkdir /app
 
-WORKDIR /src
+WORKDIR /app

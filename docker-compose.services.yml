@@ -26,9 +26,9 @@ services:
     env_file:
       - ./env/db.env
     volumes:
-      - ./alembic:/src/alembic
-      - ./alembic.ini:/src/alembic.ini
-      - ./src/code/model:/src/src/code/model
+      - ./alembic:/app/alembic
+      - ./alembic.ini:/app/alembic.ini
+      - ./src/code/model:/app/src/code/model
     command: alembic upgrade head
     networks:
       - taxi

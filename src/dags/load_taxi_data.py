@@ -17,6 +17,27 @@ from sqlalchemy.orm import Session
 from session import AirflowSession, TaxiSession
 
 TAXI_DATA_PAGE_URL = 'https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page'
+TAXI_COLUMNS = [
+    "vendor_id",
+    "tpep_pickup_datetime",
+    "tpep_dropoff_datetime",
+    "passenger_count",
+    "trip_distance",
+    "rate_code_id",
+    "store_and_fwd_flag",
+    "pu_location_id",
+    "do_location_id",
+    "payment_type",
+    "fare_amount",
+    "extra",
+    "mta_tax",
+    "tip_amount",
+    "tolls_amount",
+    "improvement_surcharge",
+    "total_amount",
+    "congestion_surcharge",
+    "airport_fee",
+]
 
 tmp_dir = tempfile.gettempdir()
 airflow_session = AirflowSession().session
@@ -48,9 +69,13 @@ def create_connection(session: Session, **kwargs: Any) -> Connection:
 
 def upload_file(file_path: Path, session: Session) -> dict:
     parquet = ParquetFile(file_path)
-    for batch in parquet.iter_batches(batch_size=10000):
+    for batch_num, batch in enumerate(parquet.iter_batches(batch_size=10000), start=1):
         df: pd.DataFrame = batch.to_pandas()
+        assert df.shape[1] == len(TAXI_COLUMNS)
+        df.columns = TAXI_COLUMNS
         df.to_sql(name='trip', con=session.get_bind(), if_exists='append')
+        if batch_num == 100:
+            break
     return {}
 
 
@@ -97,4 +122,3 @@ with DAG(
     )
 
     download_data >> check_file_exists >> upload_data
- 

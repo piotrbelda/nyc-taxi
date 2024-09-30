@@ -17,6 +17,9 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+config.set_main_option("sqlalchemy.url", os.environ['POSTGRES_BASE_URI'])
+DATA_SCHEMA = "data"
+
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
@@ -41,13 +44,13 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    config.set_main_option("sqlalchemy.url", os.environ['POSTGRES_BASE_URI'])
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        version_table_schema=DATA_SCHEMA,
     )
 
     with context.begin_transaction():
@@ -61,17 +64,17 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    config_section = config.get_section(config.config_ini_section)
-    config_section["sqlalchemy.url"] = os.environ['POSTGRES_BASE_URI']
     connectable = engine_from_config(
-        config_section,
+        config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
+            version_table_schema=DATA_SCHEMA,
         )
 
         with context.begin_transaction():
