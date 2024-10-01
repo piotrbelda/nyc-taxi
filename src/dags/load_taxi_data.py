@@ -14,29 +14,31 @@ from airflow.operators.python import PythonOperator
 from airflow.sensors.filesystem import FileSensor
 from scrapy import Selector
 from sqlalchemy.orm import Session
+
 from session import AirflowSession, TaxiSession
+from trip import Trip
 
 TAXI_DATA_PAGE_URL = 'https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page'
 TAXI_COLUMNS = [
-    "vendor_id",
-    "tpep_pickup_datetime",
-    "tpep_dropoff_datetime",
-    "passenger_count",
-    "trip_distance",
-    "rate_code_id",
-    "store_and_fwd_flag",
-    "pu_location_id",
-    "do_location_id",
-    "payment_type",
-    "fare_amount",
-    "extra",
-    "mta_tax",
-    "tip_amount",
-    "tolls_amount",
-    "improvement_surcharge",
-    "total_amount",
-    "congestion_surcharge",
-    "airport_fee",
+    Trip.vendor_id.name,
+    Trip.tpep_pickup_datetime.name,
+    Trip.tpep_dropoff_datetime.name,
+    Trip.passenger_count.name,
+    Trip.trip_distance.name,
+    Trip.rate_code_id.name,
+    Trip.store_and_fwd_flag.name,
+    Trip.pu_location_id.name,
+    Trip.do_location_id.name,
+    Trip.payment_type.name,
+    Trip.fare_amount.name,
+    Trip.extra.name,
+    Trip.mta_tax.name,
+    Trip.tip_amount.name,
+    Trip.tolls_amount.name,
+    Trip.improvement_surcharge.name,
+    Trip.total_amount.name,
+    Trip.congestion_surcharge.name,
+    Trip.airport_fee.name,
 ]
 
 tmp_dir = tempfile.gettempdir()
@@ -52,7 +54,7 @@ def sort_by_year_month(s: str) -> Tuple[int, int]:
 def get_latest_taxi_file_hyperlink() -> list[str]:
     response = httpx.get(TAXI_DATA_PAGE_URL, timeout=10)
     selector = Selector(text = response.content)
-    hyperlinks = selector.xpath('//div[@class="faq-answers"]//li//a/@href').getall()
+    hyperlinks = selector.xpath('//div[@class="faq-answers"]//li//a[@title="Yellow Taxi Trip Records"]/@href').getall()
     hyperlinks = sorted(hyperlinks, key=sort_by_year_month)
     return hyperlinks[-1]
 
@@ -73,7 +75,7 @@ def upload_file(file_path: Path, session: Session) -> dict:
         df: pd.DataFrame = batch.to_pandas()
         assert df.shape[1] == len(TAXI_COLUMNS)
         df.columns = TAXI_COLUMNS
-        df.to_sql(name='trip', con=session.get_bind(), if_exists='append')
+        df.to_sql(name=Trip.__tablename__, con=session.get_bind(), if_exists='append', index=False)
         if batch_num == 100:
             break
     return {}
