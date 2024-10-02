@@ -16,7 +16,7 @@ from scrapy import Selector
 from sqlalchemy.orm import Session
 
 from session import AirflowSession, TaxiSession
-from trip import Trip
+from db.model.trip import Trip
 
 TAXI_DATA_PAGE_URL = 'https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page'
 TAXI_COLUMNS = [
@@ -76,7 +76,7 @@ def upload_file(file_path: Path, session: Session) -> dict:
         assert df.shape[1] == len(TAXI_COLUMNS)
         df.columns = TAXI_COLUMNS
         df.to_sql(name=Trip.__tablename__, con=session.get_bind(), if_exists='append', index=False)
-        if batch_num == 100:
+        if batch_num == 1:
             break
     return {}
 

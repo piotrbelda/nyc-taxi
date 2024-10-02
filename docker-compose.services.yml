@@ -28,7 +28,7 @@ services:
     volumes:
       - ./alembic:/app/alembic
       - ./alembic.ini:/app/alembic.ini
-      - ./src/code/model:/app/src/code/model
+      - ./src/plugins/db/model:/app/src/plugins/db/model
     command: alembic upgrade head
     networks:
       - taxi
