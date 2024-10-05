@@ -97,7 +97,7 @@ with DAG(
     tags=["load"],
 ):
     latest_file_url = get_latest_taxi_file_hyperlink()
-    file_path = Path(tmp_dir) / 'data' / Path(latest_file_url).name
+    file_path = Path(tmp_dir) / Path(latest_file_url).name
 
     download_data = BashOperator(
         task_id='download_data',

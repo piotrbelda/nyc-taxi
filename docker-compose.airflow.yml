@@ -91,6 +91,7 @@ services:
     env_file:
       - ./env/airflow.env
       - ./env/db.env
+      - ./env/mlflow.env
     restart: always
     depends_on:
     #   <<: *airflow-common-depends-on
@@ -169,8 +170,8 @@ services:
           echo "   https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#before-you-begin"
           echo
         fi
-        mkdir -p /sources/{logs,dags,plugins,code,config}
-        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins,code,config}
+        mkdir -p /sources/{logs,dags,plugins,config}
+        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins,config}
         exec /entrypoint airflow version
     environment:
       <<: *airflow-common-env
