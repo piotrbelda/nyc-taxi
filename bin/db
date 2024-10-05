@@ -1,7 +1,5 @@
 #!/bin/bash
 
-DB_SERVICE_NAME=db
-
 if [[ $# -eq 0 ]]
 then
     ARGS="psql -U postgres -d taxi"
