@@ -1,10 +1,14 @@
 #!/bin/bash
 
+DB_SERVICE_NAME=db
+
 if [[ $# -eq 0 ]]
 then
-    ARGS=bash
+    ARGS="psql -U postgres -d taxi"
 else
     ARGS=$*
 fi
+
+. bin/cf db
 
 docker compose exec -it db ${ARGS}

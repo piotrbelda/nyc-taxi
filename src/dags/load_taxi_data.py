@@ -15,8 +15,8 @@ from airflow.sensors.filesystem import FileSensor
 from scrapy import Selector
 from sqlalchemy.orm import Session
 
-from session import AirflowSession, TaxiSession
-from db.model.trip import Trip
+from db.utils.session import AirflowSession, TaxiSession
+from db.model import Trip
 
 TAXI_DATA_PAGE_URL = 'https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page'
 TAXI_COLUMNS = [
@@ -51,7 +51,7 @@ def sort_by_year_month(s: str) -> Tuple[int, int]:
     return int(search.group(1)), int(search.group(2))
 
 
-def get_latest_taxi_file_hyperlink() -> list[str]:
+def get_latest_taxi_file_hyperlink() -> str:
     response = httpx.get(TAXI_DATA_PAGE_URL, timeout=10)
     selector = Selector(text = response.content)
     hyperlinks = selector.xpath('//div[@class="faq-answers"]//li//a[@title="Yellow Taxi Trip Records"]/@href').getall()
@@ -88,7 +88,7 @@ with DAG(
         "email_on_failure": False,
         "email_on_retry": False,
         "retries": 1,
-        "retry_delay": timedelta(minutes=5),
+        "retry_delay": timedelta(minutes=1),
     },
     description='Load latest NYC taxi data',
     schedule=timedelta(days=1),
@@ -97,7 +97,7 @@ with DAG(
     tags=["load"],
 ):
     latest_file_url = get_latest_taxi_file_hyperlink()
-    file_path = Path(tmp_dir) / Path(latest_file_url).name
+    file_path = Path(tmp_dir) / 'data' / Path(latest_file_url).name
 
     download_data = BashOperator(
         task_id='download_data',

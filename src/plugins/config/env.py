@@ -1,0 +1,1 @@
+TAXI_SCHEMA = 'data'

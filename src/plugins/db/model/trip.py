@@ -1,12 +1,14 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, Numeric, DateTime, Boolean
 
+from config.env import TAXI_SCHEMA
+
 Base = declarative_base()
 
 
 class Trip(Base):
     __tablename__ = 'trip'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = {'schema': TAXI_SCHEMA}
 
     id = Column(Integer, primary_key=True, unique=True)
     vendor_id = Column(Integer)
