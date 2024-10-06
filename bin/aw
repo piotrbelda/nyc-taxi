@@ -1,5 +1,5 @@
 #!/bin/bash
 
-bin/cf airflow
+. bin/cf airflow
 
 docker compose exec -it airflow-worker bash

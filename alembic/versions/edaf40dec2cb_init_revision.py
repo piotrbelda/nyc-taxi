@@ -1,8 +1,8 @@
-"""trip table added
+"""init revision
 
-Revision ID: cbda9585ac48
+Revision ID: edaf40dec2cb
 Revises: 
-Create Date: 2024-09-30 18:42:20.629243
+Create Date: 2024-10-06 09:01:59.638257
 
 """
 from typing import Sequence, Union
@@ -12,13 +12,24 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'cbda9585ac48'
+revision: str = 'edaf40dec2cb'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    op.create_table(
+        'location',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('zone', sa.Text(), nullable=False),
+        sa.Column('borough', sa.Text(), nullable=False),
+        sa.CheckConstraint('id > 0'),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('borough', 'zone', name='location_borough_zone_key'),
+        sa.UniqueConstraint('id'),
+        schema='data',
+    )
     op.create_table(
         'trip',
         sa.Column('id', sa.Integer(), nullable=False),
@@ -41,11 +52,15 @@ def upgrade() -> None:
         sa.Column('total_amount', sa.Numeric(precision=10, scale=2), nullable=True),
         sa.Column('congestion_surcharge', sa.Numeric(precision=10, scale=2), nullable=True),
         sa.Column('airport_fee', sa.Numeric(precision=10, scale=2), nullable=True),
+        sa.ForeignKeyConstraint(['do_location_id'], ['data.location.id'], ),
+        sa.ForeignKeyConstraint(['pu_location_id'], ['data.location.id'], ),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('id'),
-        schema='data'
+        schema='data',
     )
 
 
 def downgrade() -> None:
     op.drop_table('trip', schema='data')
+    op.drop_table('location', schema='data')
+    op.get_bind().execute()

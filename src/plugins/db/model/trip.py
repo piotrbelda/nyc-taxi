@@ -1,9 +1,7 @@
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, Numeric, DateTime, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, Numeric, DateTime, Boolean
 
+from ..model import Base, Location
 from config.env import TAXI_SCHEMA
-
-Base = declarative_base()
 
 
 class Trip(Base):
@@ -18,8 +16,8 @@ class Trip(Base):
     trip_distance = Column(Numeric(10, 2))
     rate_code_id = Column(Integer)
     store_and_fwd_flag = Column(Boolean)
-    pu_location_id = Column(Integer, nullable=False)
-    do_location_id = Column(Integer, nullable=False)
+    pu_location_id = Column(Integer, ForeignKey(Location.id), nullable=False)
+    do_location_id = Column(Integer, ForeignKey(Location.id), nullable=False)
     payment_type = Column(Integer)
     fare_amount = Column(Numeric(10, 2))
     extra = Column(Numeric(10, 2))
