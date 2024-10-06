@@ -29,6 +29,7 @@ def downgrade() -> None:
     op.execute(
         """
             SET search_path to 'data';
+            DELETE FROM trip;
             DELETE FROM location;
         """
     )
