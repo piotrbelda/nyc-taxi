@@ -1,12 +1,13 @@
 from sqlalchemy import Column, ForeignKey, Integer, Numeric, DateTime, Boolean
 
-from ..model import Base, Location
+from db.model import Base
+from db.model.location import Location
 from config.env import TAXI_SCHEMA
 
 
 class Trip(Base):
     __tablename__ = 'trip'
-    __table_args__ = {'schema': TAXI_SCHEMA}
+    __table_args__ = {'schema': TAXI_SCHEMA, 'extend_existing': True}
 
     id = Column(Integer, primary_key=True, unique=True)
     vendor_id = Column(Integer)

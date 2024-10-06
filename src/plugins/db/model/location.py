@@ -1,6 +1,6 @@
 from sqlalchemy import Column, CheckConstraint, Integer, Text, UniqueConstraint
 
-from ..model import Base
+from db.model import Base
 from config.env import TAXI_SCHEMA
 
 
@@ -9,7 +9,7 @@ class Location(Base):
     __table_args__ = (
         UniqueConstraint('borough', 'zone', name='location_borough_zone_key'),
         CheckConstraint('id > 0'),
-        {'schema': TAXI_SCHEMA}
+        {'schema': TAXI_SCHEMA, 'extend_existing': True}
     )
 
     id = Column(Integer, primary_key=True, unique=True)

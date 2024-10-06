@@ -16,7 +16,8 @@ from scrapy import Selector
 from sqlalchemy.orm import Session
 
 from db.utils.session import AirflowSession, TaxiSession
-from db.model import Trip
+from db.model.location import Location
+from db.model.trip import Trip
 
 TAXI_DATA_PAGE_URL = 'https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page'
 TAXI_COLUMNS = [
@@ -69,14 +70,24 @@ def create_connection(session: Session, **kwargs: Any) -> Connection:
     return connection
 
 
+def get_locations_df(session: Session) -> pd.DataFrame:
+    return pd.read_sql(
+        session.query(Location).statement,
+        con=session.get_bind(),
+    )
+
+
 def upload_file(file_path: Path, session: Session) -> dict:
     parquet = ParquetFile(file_path)
     for batch_num, batch in enumerate(parquet.iter_batches(batch_size=10000), start=1):
-        df: pd.DataFrame = batch.to_pandas()
-        assert df.shape[1] == len(TAXI_COLUMNS)
-        df.columns = TAXI_COLUMNS
+        trip_df: pd.DataFrame = batch.to_pandas()
+        trip_df.columns = TAXI_COLUMNS
+        location_df = get_locations_df(session)
+        df = pd.merge(trip_df, location_df, how='inner', left_on=Trip.pu_location_id.name, right_on=Location.id.name)
+        df = pd.merge(df, location_df, how='inner', left_on=Trip.do_location_id.name, right_on=Location.id.name)
+        df = df[TAXI_COLUMNS]
         df.to_sql(name=Trip.__tablename__, con=session.get_bind(), if_exists='append', index=False)
-        if batch_num == 1:
+        if batch_num == 100:
             break
     return {}
 
@@ -87,7 +98,7 @@ with DAG(
         'depends_on_past': False,
         "email_on_failure": False,
         "email_on_retry": False,
-        "retries": 1,
+        "retries": 0,
         "retry_delay": timedelta(minutes=1),
     },
     description='Load latest NYC taxi data',
