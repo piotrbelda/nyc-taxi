@@ -6,7 +6,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from src.plugins.db.model.trip import Base
+from config.env import TAXI_SCHEMA
+from db.model.trip import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -18,7 +19,6 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 config.set_main_option("sqlalchemy.url", os.environ['POSTGRES_BASE_URI'])
-DATA_SCHEMA = "data"
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -34,7 +34,7 @@ target_metadata = Base.metadata
 def include_name(name, type_, parent_names):
     if type_ == "schema":
         # note this will not include the default schema
-        return name == "data"
+        return name == TAXI_SCHEMA
     else:
         return True
 
@@ -57,7 +57,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        version_table_schema=DATA_SCHEMA,
+        version_table_schema=TAXI_SCHEMA,
         include_schemas=True,
         include_name=include_name
     )
@@ -83,7 +83,7 @@ def run_migrations_online() -> None:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            version_table_schema=DATA_SCHEMA,
+            version_table_schema=TAXI_SCHEMA,
             include_schemas=True,
             include_name=include_name,
         )

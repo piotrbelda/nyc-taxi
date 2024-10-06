@@ -19,7 +19,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    with open('/app/src/plugins/db/sql/taxi_locations.sql', 'r') as file:
+    with open('/app/db/sql/taxi_locations.sql', 'r') as file:
         sql_script = file.read()
 
     op.execute(sql_script)
