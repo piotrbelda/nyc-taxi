@@ -29,6 +29,7 @@ services:
       - ./alembic:/app/alembic
       - ./alembic.ini:/app/alembic.ini
       - ./src/plugins/db/model:/app/src/plugins/db/model
+      - ./src/plugins/db/sql:/app/src/plugins/db/sql
       - ./src/plugins/config:/app/config
     command: alembic upgrade head
     user: "1000:1000"

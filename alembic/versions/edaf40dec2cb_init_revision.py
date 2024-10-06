@@ -63,4 +63,3 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_table('trip', schema='data')
     op.drop_table('location', schema='data')
-    op.get_bind().execute()
