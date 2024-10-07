@@ -7,10 +7,9 @@ from typing import Any, Tuple
 import httpx
 import pandas as pd
 from pyarrow.parquet import ParquetFile
-from airflow.models.dag import DAG
+from airflow.decorators import dag, task
 from airflow.models.connection import Connection
 from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
 from airflow.sensors.filesystem import FileSensor
 from scrapy import Selector
 from sqlalchemy.orm import Session
@@ -77,43 +76,20 @@ def get_locations_df(session: Session) -> pd.DataFrame:
     )
 
 
-def upload_file(file_path: Path, session: Session) -> dict:
-    parquet = ParquetFile(file_path)
-    for batch_num, batch in enumerate(parquet.iter_batches(batch_size=10000), start=1):
-        trip_df: pd.DataFrame = batch.to_pandas()
-        trip_df.columns = TAXI_COLUMNS
-        location_df = get_locations_df(session)
-        df = pd.merge(trip_df, location_df, how='inner', left_on=Trip.pu_location_id.name, right_on=Location.id.name)
-        df = pd.merge(df, location_df, how='inner', left_on=Trip.do_location_id.name, right_on=Location.id.name)
-        df = df[TAXI_COLUMNS]
-        df.to_sql(name=Trip.__tablename__, con=session.get_bind(), if_exists='append', index=False)
-        if batch_num == 1:
-            break
-    return {}
+from utils.mlflow import mlflow_dag, mlflow_task
 
-
-with DAG(
-    dag_id='load_taxi_data',
-    default_args={
-        'depends_on_past': False,
-        "email_on_failure": False,
-        "email_on_retry": False,
-        "retries": 0,
-        "retry_delay": timedelta(minutes=1),
-    },
-    description='Load latest NYC taxi data',
+@dag(
+    dag_id='load_taxi_data_test',
+    description='Load latest NYC taxi data test',
     schedule=timedelta(days=1),
     start_date=datetime(2024, 1, 1),
     catchup=False,
     tags=["load"],
-):
+)
+@mlflow_dag
+def load_taxi_data_test():
     latest_file_url = get_latest_taxi_file_hyperlink()
     file_path = Path(tmp_dir) / Path(latest_file_url).name
-
-    download_data = BashOperator(
-        task_id='download_data',
-        bash_command=f'curl {latest_file_url} -o {str(file_path)}',
-    )
 
     file_connection = create_connection(
         airflow_session,
@@ -122,16 +98,33 @@ with DAG(
         host=tmp_dir,
     )
 
+    download_data = BashOperator(
+        task_id='download_data',
+        bash_command=f'curl {latest_file_url} -o {str(file_path)}',
+    )
+
     check_file_exists = FileSensor(
         task_id='file_sensor',
         filepath=str(file_path.parent),
         fs_conn_id=file_connection.conn_id,
     )
 
-    upload_data = PythonOperator(
-        task_id='upload_file',
-        python_callable=upload_file,
-        op_args=[file_path, taxi_session],
-    )
+    @task
+    def upload_data(file_path: Path, session: Session) -> None:
+        parquet = ParquetFile(file_path)
+        for batch_num, batch in enumerate(parquet.iter_batches(batch_size=10000), start=1):
+            trip_df: pd.DataFrame = batch.to_pandas()
+            trip_df.columns = TAXI_COLUMNS
+            location_df = get_locations_df(session)
+            df = pd.merge(trip_df, location_df, how='inner', left_on=Trip.pu_location_id.name, right_on=Location.id.name)
+            df = pd.merge(df, location_df, how='inner', left_on=Trip.do_location_id.name, right_on=Location.id.name)
+            df = df[TAXI_COLUMNS]
+            df.to_sql(name=Trip.__tablename__, con=session.get_bind(), if_exists='append', index=False)
+            if batch_num == 1:
+                break
 
-    download_data >> check_file_exists >> upload_data
+
+    download_data >> check_file_exists >> upload_data(file_path, taxi_session)
+
+
+load_taxi_data_test()
