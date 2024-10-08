@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Tuple
 
 import httpx
+import mlflow
 import pandas as pd
 from pyarrow.parquet import ParquetFile
 from airflow.models.dag import DAG
@@ -78,18 +79,21 @@ def get_locations_df(session: Session) -> pd.DataFrame:
 
 
 def upload_file(file_path: Path, session: Session) -> dict:
-    parquet = ParquetFile(file_path)
-    for batch_num, batch in enumerate(parquet.iter_batches(batch_size=10000), start=1):
-        trip_df: pd.DataFrame = batch.to_pandas()
-        trip_df.columns = TAXI_COLUMNS
-        location_df = get_locations_df(session)
-        df = pd.merge(trip_df, location_df, how='inner', left_on=Trip.pu_location_id.name, right_on=Location.id.name)
-        df = pd.merge(df, location_df, how='inner', left_on=Trip.do_location_id.name, right_on=Location.id.name)
-        df = df[TAXI_COLUMNS]
-        df.to_sql(name=Trip.__tablename__, con=session.get_bind(), if_exists='append', index=False)
-        if batch_num == 1:
-            break
-    return {}
+    with mlflow.start_run(run_name='load_taxi_data'):
+        parquet = ParquetFile(file_path)
+        for batch_num, batch in enumerate(parquet.iter_batches(batch_size=20000), start=1):
+            trip_df: pd.DataFrame = batch.to_pandas()
+            trip_df.columns = TAXI_COLUMNS
+            location_df = get_locations_df(session)
+            df = pd.merge(trip_df, location_df, how='inner', left_on=Trip.pu_location_id.name, right_on=Location.id.name)
+            df = pd.merge(df, location_df, how='inner', left_on=Trip.do_location_id.name, right_on=Location.id.name)
+            df = df[TAXI_COLUMNS]
+            df.to_sql(name=Trip.__tablename__, con=session.get_bind(), if_exists='append', index=False)
+            if batch_num == 50:
+                break
+
+        mlflow.log_artifact(file_path)
+        return {}
 
 
 with DAG(
