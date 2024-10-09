@@ -88,9 +88,9 @@ def upload_file(file_path: Path, session: Session) -> dict:
             df = pd.merge(trip_df, location_df, how='inner', left_on=Trip.pu_location_id.name, right_on=Location.id.name)
             df = pd.merge(df, location_df, how='inner', left_on=Trip.do_location_id.name, right_on=Location.id.name)
             df = df[TAXI_COLUMNS]
+            df = df[df[Trip.tpep_pickup_datetime.name].notnull() & df[Trip.tpep_dropoff_datetime.name].notnull()]
+            df = df[df[Trip.passenger_count.name].notnull()]
             df.to_sql(name=Trip.__tablename__, con=session.get_bind(), if_exists='append', index=False)
-            if batch_num == 50:
-                break
 
         mlflow.log_artifact(file_path)
         return {}

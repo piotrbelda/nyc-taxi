@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, Numeric, DateTime, Boolean
+from sqlalchemy import Column, ForeignKey, Index, Integer, Numeric, DateTime, Boolean
 
 from db.model import Base
 from db.model.location import Location
@@ -7,7 +7,10 @@ from config.env import TAXI_SCHEMA
 
 class Trip(Base):
     __tablename__ = 'trip'
-    __table_args__ = {'schema': TAXI_SCHEMA, 'extend_existing': True}
+    __table_args__ = (
+        Index('idx_trip_tpep_pickup_datetime', 'tpep_pickup_datetime', postgresql_using='btree'),
+        {'schema': TAXI_SCHEMA, 'extend_existing': True}
+    )
 
     id = Column(Integer, primary_key=True, unique=True)
     vendor_id = Column(Integer)
