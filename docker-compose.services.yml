@@ -35,6 +35,20 @@ services:
     networks:
       - taxi
 
+  backend:
+    container_name: backend
+    hostname: backend
+    build:
+      dockerfile: ./docker/backend/Dockerfile
+      context: .
+    volumes:
+      - ./src:/src
+    command: fastapi dev --port 7000 --host 0.0.0.0 --reload main.py
+    ports:
+      - 7000:7000
+    networks:
+      - taxi
+
 networks:
   taxi:
     external: true
