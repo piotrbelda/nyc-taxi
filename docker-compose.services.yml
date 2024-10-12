@@ -41,6 +41,10 @@ services:
     build:
       dockerfile: ./docker/backend/Dockerfile
       context: .
+    env_file:
+      - ./env/airflow.env
+      - ./env/db.env
+      - ./env/mlflow.env
     volumes:
       - ./src:/src
     command: fastapi dev --port 7000 --host 0.0.0.0 --reload main.py

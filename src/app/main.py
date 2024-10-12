@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from sqlalchemy.orm import Session
 
-# from plugins.db.model.trip import Trip
-# from db.utils.session import TaxiSession
+from taxi_db.model import Trip
+from taxi_db.utils.session import TaxiSession
 
 app = FastAPI(title='NYC Taxi')
 
@@ -14,6 +14,6 @@ def ping():
 
 @app.get('/trips/{trip_id}')
 def get_trip(trip_id: int):
-    # session: Session = TaxiSession().session
-    # trip = session.get(Trip, trip_id)
-    return {'id': 11}
+    session: Session = TaxiSession().session
+    trip: Trip = session.get(Trip, trip_id)
+    return {'id': trip.trip_distance}

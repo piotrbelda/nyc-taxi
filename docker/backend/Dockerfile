@@ -6,6 +6,10 @@ COPY ./docker/backend/requirements.txt /tmp
 
 RUN pip install -r /tmp/requirements.txt
 
-COPY ./src /
+COPY ./src/app /app
 
-WORKDIR /src
+COPY ./src/common/taxi-db /tmp/taxi-db
+
+RUN pip install -e /tmp/taxi-db
+
+WORKDIR /app
