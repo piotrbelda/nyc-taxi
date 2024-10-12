@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "taxi_test"
+version = "0.0.1"
+dependencies = [
+    "fastapi[standard]==0.115.0"
+]

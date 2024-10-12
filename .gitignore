@@ -6,3 +6,5 @@ __pycache__
 
 *.parquet
 *.env
+
+**/*.egg-info
