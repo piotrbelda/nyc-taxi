@@ -8,4 +8,4 @@ RUN pip install -r /tmp/requirements.txt
 
 COPY ./src /
 
-WORKDIR /src/app
+WORKDIR /src
