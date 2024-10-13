@@ -10,8 +10,8 @@ from sklearn.metrics import root_mean_squared_error
 from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
 
-from db.model.trip import Trip
-from db.utils.session import TaxiSession
+from taxi_db.model import Trip
+from taxi_db.utils.session import TaxiSession
 
 session = TaxiSession().session
 

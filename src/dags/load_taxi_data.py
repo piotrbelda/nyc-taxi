@@ -16,9 +16,8 @@ from airflow.sensors.filesystem import FileSensor
 from scrapy import Selector
 from sqlalchemy.orm import Session
 
-from db.utils.session import AirflowSession, TaxiSession
-from db.model.location import Location
-from db.model.trip import Trip
+from taxi_db.utils.session import AirflowSession, TaxiSession
+from taxi_db.model import Location, Trip
 
 TAXI_DATA_PAGE_URL = 'https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page'
 TAXI_COLUMNS = [

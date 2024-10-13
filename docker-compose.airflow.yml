@@ -3,8 +3,8 @@ name: airflow
 x-airflow-common:
   &airflow-common
   build:
-    dockerfile: Dockerfile
-    context: ./docker/airflow
+    context: .
+    dockerfile: ./docker/airflow/Dockerfile
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
