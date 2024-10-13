@@ -50,6 +50,20 @@ services:
     networks:
       - taxi
 
+  frontend:
+    container_name: frontend
+    hostname: frontend
+    build:
+      dockerfile: ./docker/frontend/Dockerfile
+      context: .
+    volumes:
+      - ./src/app/frontend/:/app/
+    command: streamlit run app.py --server.address 0.0.0.0 --server.port 9000
+    ports:
+      - 9000:9000
+    networks:
+      - taxi
+
 networks:
   taxi:
     external: true
