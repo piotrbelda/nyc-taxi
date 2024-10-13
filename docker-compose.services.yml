@@ -19,17 +19,15 @@ services:
     container_name: migration
     hostname: migration
     build:
-      dockerfile: Dockerfile
-      context: ./docker/alembic
+      context: .
+      dockerfile: ./docker/alembic/Dockerfile
     env_file:
       - ./env/db.env
+      - ./env/airflow.env
     volumes:
       - ./alembic:/app/alembic
       - ./alembic.ini:/app/alembic.ini
-      - ./src/plugins/db:/app/db
-      - ./src/plugins/config:/app/config
     command: alembic upgrade head
-    user: "1000:1000"
     networks:
       - taxi
 

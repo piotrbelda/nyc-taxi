@@ -6,8 +6,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from config.env import TAXI_SCHEMA
-from db.model.trip import Base
+from taxi_db.config.env import TAXI_SCHEMA
+from taxi_db.model import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
