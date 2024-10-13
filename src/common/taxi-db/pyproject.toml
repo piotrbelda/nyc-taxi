@@ -6,7 +6,6 @@ build-backend = "setuptools.build_meta"
 name = "taxi_db"
 version = "0.0.1"
 dependencies = [
-    "fastapi[standard]==0.115.0",
     "SQLAlchemy==1.4.53",
     "psycopg2-binary==2.9.9"
 ]
