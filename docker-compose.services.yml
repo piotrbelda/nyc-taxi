@@ -64,6 +64,18 @@ services:
     networks:
       - taxi
 
+  grafana:
+    container_name: grafana
+    hostname: grafana
+    user: "472"
+    image: grafana/grafana
+    volumes:
+      - ./src/config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
+    ports:
+      - 3000:3000
+    networks:
+      - taxi
+
 networks:
   taxi:
     external: true
