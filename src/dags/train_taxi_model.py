@@ -4,6 +4,7 @@ from datetime import datetime
 import pandas as pd
 from airflow.decorators import dag, task
 import mlflow
+from mlflow.models import infer_signature
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import root_mean_squared_error
@@ -34,7 +35,7 @@ def train_taxi_model():
             session.query(Trip).where(
                 extract('year', Trip.tpep_pickup_datetime) == latest_trip_date.year,
                 extract('month', Trip.tpep_pickup_datetime) == latest_trip_date.month,
-            ).limit(100000).statement,
+            ).limit(10000).statement,
             con=session.get_bind(),
         )
         df[Trip.tpep_pickup_datetime.name] = df[Trip.tpep_pickup_datetime.name].astype(str)
@@ -67,8 +68,15 @@ def train_taxi_model():
             lr = LinearRegression()
             lr.fit(X_train, y_train)
             y_pred = lr.predict(X_train)
+            signature = infer_signature(X_train, y_pred)
             rmse = root_mean_squared_error(y_train, y_pred)
             mlflow.log_metric('rmse', rmse)
+            mlflow.sklearn.log_model(
+                sk_model=lr,
+                artifact_path='sklearn-model',
+                signature=signature,
+                registered_model_name="nyc-taxi",
+            )
 
     df_dict = load_latest_data(session)
     df_dict_transformed = transform_data(df_dict)
