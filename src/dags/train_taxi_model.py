@@ -23,38 +23,38 @@ numerical_feats = [Trip.trip_distance.name]
 
 
 @dag(
-    dag_id='train_taxi_model',
-    description='Train NYC Taxi trip duration model',
+    dag_id="train_taxi_model",
+    description="Train NYC Taxi trip duration model",
 )
 def train_taxi_model():
     @task
     def load_latest_data(session: Session) -> dict:
         latest_trip_date: datetime = session.query(func.max(Trip.tpep_pickup_datetime)).scalar()
-        logger.info(f'Latest trip date: {str(latest_trip_date)}')
+        logger.info(f"Latest trip date: {str(latest_trip_date)}")
         df = pd.read_sql(
             session.query(Trip).where(
-                extract('year', Trip.tpep_pickup_datetime) == latest_trip_date.year,
-                extract('month', Trip.tpep_pickup_datetime) == latest_trip_date.month,
+                extract("year", Trip.tpep_pickup_datetime) == latest_trip_date.year,
+                extract("month", Trip.tpep_pickup_datetime) == latest_trip_date.month,
             ).limit(10000).statement,
             con=session.get_bind(),
         )
         df[Trip.tpep_pickup_datetime.name] = df[Trip.tpep_pickup_datetime.name].astype(str)
         df[Trip.tpep_dropoff_datetime.name] = df[Trip.tpep_dropoff_datetime.name].astype(str)
-        logger.info(f'Loaded DataFrame shape: {df.shape}, dtypes: {df.dtypes}')
-        return df.to_dict(orient='list')
+        logger.info(f"Loaded DataFrame shape: {df.shape}, dtypes: {df.dtypes}")
+        return df.to_dict(orient="list")
 
     @task
     def transform_data(df_dict: dict) -> dict:
         df = pd.DataFrame(df_dict)
         df[Trip.tpep_pickup_datetime.name] = pd.to_datetime(df[Trip.tpep_pickup_datetime.name])
         df[Trip.tpep_dropoff_datetime.name] = pd.to_datetime(df[Trip.tpep_dropoff_datetime.name])
-        df['duration'] = df.apply(
+        df["duration"] = df.apply(
             lambda x: (x[Trip.tpep_dropoff_datetime.name] - x[Trip.tpep_pickup_datetime.name]).total_seconds() / 60,
             axis=1,
         )
-        df[categorical_feats] = df[categorical_feats].astype('object')
-        df = df[[*categorical_feats, *numerical_feats, 'duration']]
-        return df.to_dict(orient='list')
+        df[categorical_feats] = df[categorical_feats].astype("object")
+        df = df[[*categorical_feats, *numerical_feats, "duration"]]
+        return df.to_dict(orient="list")
 
     @task
     def train_model(df_dict: dict) -> None:
@@ -62,18 +62,18 @@ def train_taxi_model():
         dv = DictVectorizer()
         train_dicts = df[categorical_feats + numerical_feats].to_dict(orient="records")
         X_train = dv.fit_transform(train_dicts)
-        y_train = df['duration'].values
+        y_train = df["duration"].values
 
-        with mlflow.start_run(run_name='train_taxi_model'):
+        with mlflow.start_run(run_name="train_taxi_model"):
             lr = LinearRegression()
             lr.fit(X_train, y_train)
             y_pred = lr.predict(X_train)
             signature = infer_signature(X_train, y_pred)
             rmse = root_mean_squared_error(y_train, y_pred)
-            mlflow.log_metric('rmse', rmse)
+            mlflow.log_metric("rmse", rmse)
             mlflow.sklearn.log_model(
                 sk_model=lr,
-                artifact_path='sklearn-model',
+                artifact_path="model",
                 signature=signature,
                 registered_model_name="nyc-taxi",
             )
