@@ -13,8 +13,8 @@ provider "aws" {
   region = "eu-central-1"
 }
 
-resource "aws_s3_bucket" "test_bucket" {
-  bucket = "mlflow-taxi-test"
+resource "aws_s3_bucket" "mlflow_taxi_bucket" {
+  bucket = "mlflow-taxi"
 
   tags = {
     Name        = "MLflow Taxi bucket"
@@ -23,7 +23,7 @@ resource "aws_s3_bucket" "test_bucket" {
 }
 
 resource "aws_s3_bucket_public_access_block" "test_bucket_access_block" {
-  bucket = aws_s3_bucket.test_bucket.id
+  bucket = aws_s3_bucket.mlflow_taxi_bucket.id
 
   block_public_acls       = false
   block_public_policy     = false
