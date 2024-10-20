@@ -1,5 +1,3 @@
-CREATE DATABASE taxi;
-\c taxi
 CREATE SCHEMA mlflow;
 CREATE SCHEMA airflow;
 CREATE SCHEMA data;
