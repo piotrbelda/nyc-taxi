@@ -59,7 +59,8 @@ def run_migrations_offline() -> None:
         dialect_opts={"paramstyle": "named"},
         version_table_schema=TAXI_SCHEMA,
         include_schemas=True,
-        include_name=include_name
+        include_name=include_name,
+        transaction_per_migration=True,
     )
 
     with context.begin_transaction():
@@ -86,6 +87,7 @@ def run_migrations_online() -> None:
             version_table_schema=TAXI_SCHEMA,
             include_schemas=True,
             include_name=include_name,
+            transaction_per_migration=True,
         )
 
         with context.begin_transaction():

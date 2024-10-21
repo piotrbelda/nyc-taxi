@@ -23,6 +23,24 @@ services:
     networks:
       - taxi
 
+  migration:
+    container_name: migration
+    hostname: migration
+    build:
+      context: .
+      dockerfile: ./docker/alembic/Dockerfile
+    env_file:
+      - ./env/db.env
+      - ./env/airflow.env
+    volumes:
+      - ./alembic:/app/alembic
+      - ./alembic.ini:/app/alembic.ini
+      - ./sql:/app/sql
+    command: alembic upgrade head
+    user: "1000:0"
+    networks:
+      - taxi
+
   redis:
     container_name: redis
     hostname: redis

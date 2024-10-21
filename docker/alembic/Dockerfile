@@ -12,4 +12,10 @@ RUN pip install -e /tmp/taxi-db
 
 RUN mkdir /app
 
+ARG USER=alembic
+
+RUN useradd ${USER}
+
+USER ${USER}
+
 WORKDIR /app
