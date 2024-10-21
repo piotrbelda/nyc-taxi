@@ -24,7 +24,6 @@ session  = TaxiSession().session
 
 
 def upgrade() -> None:
-    breakpoint()
     df = pd.read_csv("alembic/data/taxi_zones.csv")
     df = df.drop_duplicates(subset=['zone', 'borough'])
     for _, row in df.iterrows():
