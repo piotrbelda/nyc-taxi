@@ -1,3 +1,4 @@
+from geoalchemy2 import Geometry
 from sqlalchemy import Column, ForeignKey, Index, Integer, Numeric, DateTime, Boolean
 
 from ..model import Base
@@ -32,3 +33,12 @@ class Trip(Base):
     total_amount = Column(Numeric(10, 2))
     congestion_surcharge = Column(Numeric(10, 2))
     airport_fee = Column(Numeric(10, 2))
+    geom = Column(
+        Geometry(
+            geometry_type="LINESTRING",
+            srid=4326,
+            spatial_index=True,
+            nullable=True,
+        ),
+        nullable=True,
+    )
