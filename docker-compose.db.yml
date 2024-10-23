@@ -36,7 +36,6 @@ services:
       - ./alembic:/app/alembic
       - ./alembic.ini:/app/alembic.ini
       - ./sql:/app/sql
-    command: alembic upgrade head
     user: "1000:0"
     networks:
       - taxi
