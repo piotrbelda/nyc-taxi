@@ -20,6 +20,6 @@ USER ${USER}
 
 WORKDIR /app
 
-COPY ./docker/alembic/install.sh .
+COPY ./docker/alembic/*.sh .
 
 ENTRYPOINT ["./install.sh"]
