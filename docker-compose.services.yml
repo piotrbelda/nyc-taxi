@@ -39,6 +39,8 @@ services:
     build:
       dockerfile: ./docker/frontend/Dockerfile
       context: .
+    env_file:
+      - ./env/db.env
     volumes:
       - ./src/app/frontend/:/app/
     command: streamlit run app.py --server.address 0.0.0.0 --server.port 9000
