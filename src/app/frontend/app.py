@@ -6,7 +6,7 @@ from streamlit_folium import st_folium
 from folium import plugins
 from shapely import wkb
 from geoalchemy2.functions import ST_GeomFromText
-# from geoalchemy2.elements import
+from datetime import date, datetime
 
 from taxi_db.model import Location, Trip
 from taxi_db.utils.session import TaxiSession
@@ -26,10 +26,23 @@ locations_df[Location.geom.name] = locations_df[Location.geom.name].apply(lambda
 bzMap = locations_df.groupby(Location.borough.name)[Location.zone.name].apply(lambda x: x.tolist()).to_dict()
 gdf = gpd.GeoDataFrame(locations_df, geometry=Location.geom.name)
 
-borough = st.sidebar.selectbox('Borough', bzMap.keys())
-zone = st.sidebar.selectbox('Zone', bzMap[borough])
+st.sidebar.markdown('<h2 style="text-align: center">Trip parameters</h2>', unsafe_allow_html=True)
 
-displayed_map = folium.Map(location=[39.949610, -75.150282], zoom_start=16)
+borough = st.sidebar.selectbox("Borough", bzMap.keys())
+zone = st.sidebar.selectbox("Zone", bzMap[borough])
+
+passenger_count = st.sidebar.number_input("Passengers count", min_value=1, max_value=9, step=1)
+pu_date = st.sidebar.date_input("Pickup date", date.today())
+pu_time = st.sidebar.time_input("Pickup time", datetime.now().time())
+pu_datetime = datetime.combine(pu_date, pu_time)
+
+do_date = st.sidebar.date_input("Dropoff date", date.today())
+do_time = st.sidebar.time_input("Dropoff time", datetime.now().time())
+do_datetime = datetime.combine(do_date, do_time)
+
+fare_amount = st.sidebar.number_input("Fare amount", min_value=0.0, step=0.01)
+
+displayed_map = folium.Map(location=[40.71207833506073, -74.01020032229094], zoom_start=10)
 plugins.Fullscreen(position="topleft", force_separate_button=True).add_to(displayed_map)
 
 plugins.Draw(
@@ -37,7 +50,7 @@ plugins.Draw(
         "polyline": {
             "shapeOptions": {
                 "color": "#ff0000",
-                "weight": 5,
+                "weight": 2,
                 "opacity": 0.7,
                 "dashArray": "10, 5",
             }
@@ -51,31 +64,30 @@ plugins.Draw(
 ).add_to(displayed_map)
 
 folium.GeoJson(
-    gdf.geom.to_json(),
+    gdf[[Location.geom.name, Location.zone.name]].to_json(),
     name="Location",
     style_function=lambda x: {
         "fillColor": "blue",
         "color": "black",
-        "weight": 2,
-        "fillOpacity": 0.5,
+        "weight": 1,
+        "fillOpacity": 0.3,
     },
+    popup=folium.GeoJsonPopup(fields=[Location.zone.name])
 ).add_to(displayed_map)
 
 output = st_folium(displayed_map, use_container_width=True, returned_objects=["all_drawings"])
 
-if st.sidebar.button("Add trip to database"):
+if st.sidebar.button("Save trip", use_container_width=True):
     if drawings := output.get("all_drawings"):
         for idx, drawing in enumerate(drawings):
-            linestring_wkt = f"LINESTRING({', '.join([f'{latitude} {longitude}' for latitude, longitude in drawing["geometry"]["coordinates"]])})"
+            linestring_wkt = f"LINESTRING({', '.join([f'{longitude} {latitude}' for longitude, latitude in drawing["geometry"]["coordinates"]])})"
             geom = ST_GeomFromText(linestring_wkt, 4326)
             trip = Trip(
-                tpep_pickup_datetime="2024-10-26 12:31:11",
-                tpep_dropoff_datetime="2024-10-26 12:31:11",
-                passenger_count=2,
-                pu_location_id=1,
-                do_location_id=1,
+                tpep_pickup_datetime=pu_datetime,
+                tpep_dropoff_datetime=do_datetime,
+                passenger_count=passenger_count,
+                fare_amount=fare_amount,
                 geom=geom,
             )
             session.add(trip)
             session.commit()
-
