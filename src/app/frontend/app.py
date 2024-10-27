@@ -13,7 +13,7 @@ from taxi_db.utils.session import TaxiSession
 
 session = TaxiSession().session
 
-st.set_page_config(page_title="NYC Taxi", layout="wide")
+st.set_page_config(page_title="NYC Taxi", page_icon="taxi", layout="wide")
 
 
 @st.cache_data
@@ -31,7 +31,7 @@ st.sidebar.markdown('<h2 style="text-align: center">Trip parameters</h2>', unsaf
 borough = st.sidebar.selectbox("Borough", bzMap.keys())
 zone = st.sidebar.selectbox("Zone", bzMap[borough])
 
-passenger_count = st.sidebar.number_input("Passengers count", min_value=1, max_value=9, step=1)
+passenger_count = st.sidebar.slider("Passengers count", min_value=1, max_value=9, step=1)
 pu_date = st.sidebar.date_input("Pickup date", date.today())
 pu_time = st.sidebar.time_input("Pickup time", datetime.now().time())
 pu_datetime = datetime.combine(pu_date, pu_time)
