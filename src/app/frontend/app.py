@@ -31,6 +31,8 @@ st.sidebar.markdown('<h2 style="text-align: center">Trip parameters</h2>', unsaf
 borough = st.sidebar.selectbox("Borough", bzMap.keys())
 zone = st.sidebar.selectbox("Zone", bzMap[borough])
 
+x_min, y_min, x_max, y_max = gdf[gdf[Location.zone.name] == zone].bounds.values[0]
+
 passenger_count = st.sidebar.slider("Passengers count", min_value=1, max_value=9, step=1)
 pu_date = st.sidebar.date_input("Pickup date", date.today())
 pu_time = st.sidebar.time_input("Pickup time", datetime.now().time())
@@ -43,6 +45,7 @@ do_datetime = datetime.combine(do_date, do_time)
 fare_amount = st.sidebar.number_input("Fare amount", min_value=0.0, step=0.01)
 
 displayed_map = folium.Map(location=[40.71207833506073, -74.01020032229094], zoom_start=10)
+displayed_map.fit_bounds([[y_min, x_min], [y_max, x_max]])
 plugins.Fullscreen(position="topleft", force_separate_button=True).add_to(displayed_map)
 
 plugins.Draw(
