@@ -6,7 +6,7 @@ from streamlit_folium import st_folium
 from folium import plugins
 from shapely import wkb
 from geoalchemy2.functions import ST_GeomFromText
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from taxi_db.model import Location, Trip
 from taxi_db.utils.session import TaxiSession
@@ -35,11 +35,16 @@ x_min, y_min, x_max, y_max = gdf[gdf[Location.zone.name] == zone].bounds.values[
 
 passenger_count = st.sidebar.slider("Passengers count", min_value=1, max_value=9, step=1)
 pu_date = st.sidebar.date_input("Pickup date", date.today())
-pu_time = st.sidebar.time_input("Pickup time", datetime.now().time())
+
+if "pu_time" not in st.session_state:
+    st.session_state["pu_time"] = datetime.now().time()
+pu_time = st.sidebar.time_input("Pickup time", st.session_state["pu_time"], step=timedelta(hours=1))
 pu_datetime = datetime.combine(pu_date, pu_time)
 
 do_date = st.sidebar.date_input("Dropoff date", date.today())
-do_time = st.sidebar.time_input("Dropoff time", datetime.now().time())
+if "do_time" not in st.session_state:
+    st.session_state["do_time"] = datetime.now().time()
+do_time = st.sidebar.time_input("Dropoff time", st.session_state["do_time"], step=timedelta(hours=1))
 do_datetime = datetime.combine(do_date, do_time)
 
 fare_amount = st.sidebar.number_input("Fare amount", min_value=0.0, step=0.01)
