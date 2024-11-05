@@ -7,6 +7,7 @@ from folium import plugins
 from shapely import wkb
 from geoalchemy2.functions import ST_GeomFromText
 from datetime import date, datetime, timedelta
+import httpx
 
 from taxi_db.model import Location, Trip
 from taxi_db.utils.session import TaxiSession
@@ -99,3 +100,21 @@ if st.sidebar.button("Save trip", use_container_width=True):
             )
             session.add(trip)
             session.commit()
+            session.refresh(trip)
+
+            response = httpx.post(
+                "http://backend.taxi:7000/predict",
+                json={
+                    "tpep_pickup_datetime": str(trip.tpep_pickup_datetime),
+                    "tpep_dropoff_datetime": str(trip.tpep_dropoff_datetime),
+                    "passenger_count": trip.passenger_count,
+                    "trip_distance": float(trip.trip_distance),
+                    "fare_amount": float(trip.fare_amount),
+                    "pu_location_id": trip.pu_location_id,
+                    "do_location_id": trip.do_location_id
+                },
+                headers={
+                    "Content-Type": "application/json",
+                    "accept": "application/json",
+                }
+            )
