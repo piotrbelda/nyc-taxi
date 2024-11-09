@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "taxi_model"
+version = "0.0.1"
+dependencies = [
+    "taxi_db==0.0.1",
+    "scikit-learn==1.5.1"
+]

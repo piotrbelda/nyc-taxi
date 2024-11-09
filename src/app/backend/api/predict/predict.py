@@ -1,10 +1,11 @@
 from datetime import datetime
-from typing import Optional
 
 import mlflow
 from fastapi import APIRouter
 from pydantic import BaseModel
 from sklearn.linear_model import LinearRegression
+
+from taxi_model.pipeline import pipeline
 
 router = APIRouter()
 
@@ -32,5 +33,4 @@ def get_latest_taxi_model() -> LinearRegression:
 
 @router.post("")
 def predict_trip_duration(trip: Trip):
-    print(trip.__dict__)
     return {"trip": trip.pu_location_id}
