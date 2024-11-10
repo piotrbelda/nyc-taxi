@@ -12,4 +12,8 @@ COPY ./src/common/taxi-db /tmp/taxi-db
 
 RUN pip install -e /tmp/taxi-db
 
+COPY ./src/common/taxi-model /tmp/taxi-model
+
+RUN pip install -e /tmp/taxi-model
+
 WORKDIR /app

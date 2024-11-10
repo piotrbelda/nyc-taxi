@@ -2,3 +2,4 @@ fastapi[standard]==0.115.0
 SQLAlchemy==1.4.53
 mlflow==2.15.1
 pandas==2.1.4
+boto3==1.35.5

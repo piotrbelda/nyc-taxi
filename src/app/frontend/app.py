@@ -1,3 +1,5 @@
+from typing import List
+
 import folium
 import geopandas as gpd
 import pandas as pd
@@ -91,6 +93,7 @@ st.sidebar.button("Predict duration", use_container_width=True)
 
 if st.sidebar.button("Save trip", use_container_width=True):
     if drawings := output.get("all_drawings"):
+        trips: List[Trip] = []
         for idx, drawing in enumerate(drawings):
             linestring_wkt = f"LINESTRING({', '.join([f'{longitude} {latitude}' for longitude, latitude in drawing["geometry"]["coordinates"]])})"
             geom = ST_GeomFromText(linestring_wkt, 4326)
@@ -105,9 +108,12 @@ if st.sidebar.button("Save trip", use_container_width=True):
             session.commit()
             session.refresh(trip)
 
-            response = httpx.post(
-                "http://backend.taxi:7000/predict",
-                json={
+            trips.append(trip)
+
+        response = httpx.post(
+            "http://backend.taxi:7000/predict",
+            json=[
+                {
                     "tpep_pickup_datetime": str(trip.tpep_pickup_datetime),
                     "tpep_dropoff_datetime": str(trip.tpep_dropoff_datetime),
                     "passenger_count": trip.passenger_count,
@@ -115,9 +121,11 @@ if st.sidebar.button("Save trip", use_container_width=True):
                     "fare_amount": float(trip.fare_amount),
                     "pu_location_id": trip.pu_location_id,
                     "do_location_id": trip.do_location_id
-                },
-                headers={
-                    "Content-Type": "application/json",
-                    "accept": "application/json",
                 }
-            )
+                for trip in trips
+            ],
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+            }
+        )

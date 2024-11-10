@@ -28,6 +28,18 @@ class TaxiTransformer(TransformerMixin):
         return X
 
 
+class TaxiDictTransformer(TransformerMixin):
+    def __init__(self, categorical_feats, numerical_feats) -> None:
+        self.categorical_feats = categorical_feats
+        self.numerical_feats = numerical_feats
+
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X: pd.DataFrame) -> list[dict]:
+        return X[[*categorical_feats, *numerical_feats]].copy().to_dict(orient="records")
+
+
 preprocessor = ColumnTransformer(
     transformers=[
         ("cat", "passthrough", categorical_feats),
@@ -44,8 +56,9 @@ pipeline = Pipeline(
                 Trip.tpep_dropoff_datetime.name,
             ),
         ),
-        ("select_columns", preprocessor),
+        # ("select_columns", preprocessor),
+        ("taxi_dict_transformer", TaxiDictTransformer(categorical_feats, numerical_feats)),
         ("dict_vectorizer", DictVectorizer(sparse=False)),
-        ("regressor", LinearRegression()),
+        # ("regressor", LinearRegression()),
     ]
 )
