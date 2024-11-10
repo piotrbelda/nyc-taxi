@@ -7,5 +7,6 @@ name = "taxi_model"
 version = "0.0.1"
 dependencies = [
     "taxi_db==0.0.1",
-    "scikit-learn==1.5.1"
+    "scikit-learn==1.5.1",
+    "mlflow==2.15.1"
 ]
