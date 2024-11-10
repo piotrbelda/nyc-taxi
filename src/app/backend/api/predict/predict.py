@@ -1,26 +1,15 @@
-from datetime import datetime
 from typing import List
-
 
 import pandas as pd
 from fastapi import APIRouter
-from pydantic import BaseModel
 
 from taxi_db.model import Trip as TripModel
 from taxi_model.model import get_latest_taxi_model
 from taxi_model.pipeline import pipeline
 
+from ...model.trip import Trip
+
 router = APIRouter()
-
-
-class Trip(BaseModel):
-    tpep_pickup_datetime: datetime
-    tpep_dropoff_datetime: datetime
-    passenger_count: int
-    trip_distance: float
-    fare_amount: float
-    pu_location_id: int
-    do_location_id: int
 
 
 @router.post("")
@@ -40,5 +29,4 @@ def predict_trip_duration(trips: List[Trip]):
     X = pipeline.fit_transform(df)
     model = get_latest_taxi_model()
     predictions = model.predict(X)
-    print(predictions)
     return {"predictions": predictions.tolist()}
