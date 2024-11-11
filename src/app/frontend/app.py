@@ -110,22 +110,23 @@ if st.sidebar.button("Save trip", use_container_width=True):
 
             trips.append(trip)
 
-        response = httpx.post(
-            "http://backend.taxi:7000/predict",
-            json=[
-                {
-                    "tpep_pickup_datetime": str(trip.tpep_pickup_datetime),
-                    "tpep_dropoff_datetime": str(trip.tpep_dropoff_datetime),
-                    "passenger_count": trip.passenger_count,
-                    "trip_distance": float(trip.trip_distance),
-                    "fare_amount": float(trip.fare_amount),
-                    "pu_location_id": trip.pu_location_id,
-                    "do_location_id": trip.do_location_id
+        if trips:
+            response = httpx.post(
+                "http://backend.taxi:7000/predict",
+                json=[
+                    {
+                        Trip.tpep_pickup_datetime.name: str(trip.tpep_pickup_datetime),
+                        Trip.tpep_dropoff_datetime.name: str(trip.tpep_dropoff_datetime),
+                        Trip.passenger_count.name: trip.passenger_count,
+                        Trip.trip_distance.name: float(trip.trip_distance),
+                        Trip.fare_amount.name: float(trip.fare_amount),
+                        Trip.pu_location_id.name: trip.pu_location_id,
+                        Trip.do_location_id.name: trip.do_location_id,
+                    }
+                    for trip in trips
+                ],
+                headers={
+                    "Content-Type": "application/json",
+                    "accept": "application/json",
                 }
-                for trip in trips
-            ],
-            headers={
-                "Content-Type": "application/json",
-                "accept": "application/json",
-            }
-        )
+            )
