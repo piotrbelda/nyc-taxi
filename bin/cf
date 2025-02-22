@@ -1,8 +1,24 @@
 #!/bin/bash
 
-export COMPOSE_FILE="$(pwd)/docker-compose.${1}.yml"
+COMPOSE_NAME="${1}"
+AVAILABLE_COMPOSES="airflow db services"
+read -r -a COMPOSES_ARR <<< "${AVAILABLE_COMPOSES}"
 
-if [[ ${1} -eq "airflow" ]]
+if [ -z "${COMPOSE_NAME}" ]; then
+    echo "You need to pass service name!"
+    exit 1
+fi
+
+if ! echo "${AVAILABLE_COMPOSES}" | grep -wq "${COMPOSE_NAME}"; then
+    echo "You need to pass one of the following services: ${AVAILABLE_COMPOSES}"
+    exit 1
+fi
+
+COMPOSE_FILE_NAME="docker-compose.${COMPOSE_NAME}.yml"
+
+export COMPOSE_FILE="$(pwd)/${COMPOSE_FILE_NAME}" && echo "Compose file: ${COMPOSE_FILE_NAME} overriden successfully!"
+
+if [[ "${COMPOSE_NAME}" == "${COMPOSES_ARR[0]}" ]]
 then
     export AIRFLOW_UID=$(id -u)
     export AIRFLOW_GID=0
