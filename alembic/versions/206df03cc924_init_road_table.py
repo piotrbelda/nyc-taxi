@@ -23,7 +23,7 @@ def upgrade() -> None:
     op.create_table(
         'road',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('name', sa.Text(), nullable=False),
+        sa.Column('name', sa.Text(), nullable=True),
         sa.Column('type', sa.VARCHAR(length=1), nullable=True),
         sa.Column('geom', Geometry(geometry_type='LINESTRING', srid=4326, from_text='ST_GeomFromEWKT', name='geometry', spatial_index=False), nullable=True),
         sa.PrimaryKeyConstraint('id'),

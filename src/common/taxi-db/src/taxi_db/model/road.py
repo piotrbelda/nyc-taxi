@@ -15,7 +15,7 @@ class Road(Base):
     )
 
     id = Column(Integer, primary_key=True, unique=True)
-    name = Column(Text, nullable=False)
+    name = Column(Text, nullable=True)
     type = Column(VARCHAR(length=1), nullable=True)
     geom = Column(
         Geometry(
