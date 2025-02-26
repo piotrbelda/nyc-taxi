@@ -22,6 +22,7 @@ def get_locations():
         ).statement,
         con=session.get_bind(),
     )
+    # encode geom as hex
     locations_df[Location.geom.name] = locations_df[Location.geom.name].apply(lambda geom: binascii.hexlify(geom).decode("utf-8"))
     return locations_df.to_dict(orient="records")
 
@@ -30,4 +31,7 @@ def get_locations():
 def get_location(location_id: int):
     session: Session = TaxiSession().session
     location: Location = session.get(Location, location_id)
-    return {"borough": location.borough, "zone": location.zone} if location else {}
+    return {
+        Location.borough.name: location.borough,
+        Location.zone.name: location.zone,
+    } if location else {}

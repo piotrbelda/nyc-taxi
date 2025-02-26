@@ -21,11 +21,19 @@ st.set_page_config(page_title="NYC Taxi", page_icon="taxi", layout="wide")
 
 @st.cache_data
 def get_locations_df() -> pd.DataFrame:
-    return pd.read_sql(session.query(Location).statement, con=session.get_bind())
+    locations_data = httpx.get(
+        "http://backend.taxi:7000/locations/",
+        headers={
+            "Content-Type": "application/json",
+            "accept": "application/json",
+        }
+    ).json()
+    df = pd.DataFrame(locations_data)
+    df[Location.geom.name] = df[Location.geom.name].apply(lambda geom: wkb.loads(bytes.fromhex(geom)))
+    return df
 
 
 locations_df = get_locations_df()
-locations_df[Location.geom.name] = locations_df[Location.geom.name].apply(lambda geom: wkb.loads(bytes(geom.data)))
 bzMap = locations_df.groupby(Location.borough.name)[Location.zone.name].apply(lambda x: x.tolist()).to_dict()
 gdf = gpd.GeoDataFrame(locations_df, geometry=Location.geom.name)
 
