@@ -97,8 +97,6 @@ folium.GeoJson(
 
 output = st_folium(displayed_map, use_container_width=True, returned_objects=["all_drawings"])
 
-st.sidebar.button("Predict duration", use_container_width=True)
-
 if st.sidebar.button("Save trip", use_container_width=True):
     if drawings := output.get("all_drawings"):
         trips: List[Trip] = []
@@ -117,24 +115,26 @@ if st.sidebar.button("Save trip", use_container_width=True):
             session.refresh(trip)
 
             trips.append(trip)
+        st.session_state["trips"] = trips
 
-        if trips:
-            response = httpx.post(
-                "http://backend.taxi:7000/predict",
-                json=[
-                    {
-                        Trip.tpep_pickup_datetime.name: str(trip.tpep_pickup_datetime),
-                        Trip.tpep_dropoff_datetime.name: str(trip.tpep_dropoff_datetime),
-                        Trip.passenger_count.name: trip.passenger_count,
-                        Trip.trip_distance.name: float(trip.trip_distance),
-                        Trip.fare_amount.name: float(trip.fare_amount),
-                        Trip.pu_location_id.name: trip.pu_location_id,
-                        Trip.do_location_id.name: trip.do_location_id,
-                    }
-                    for trip in trips
-                ],
-                headers={
-                    "Content-Type": "application/json",
-                    "accept": "application/json",
-                }
-            )
+trips = st.session_state.get("trips")
+if st.sidebar.button("Predict duration", use_container_width=True) and trips:
+    response = httpx.post(
+        "http://backend.taxi:7000/predict",
+        json=[
+            {
+                Trip.tpep_pickup_datetime.name: str(trip.tpep_pickup_datetime),
+                Trip.tpep_dropoff_datetime.name: str(trip.tpep_dropoff_datetime),
+                Trip.passenger_count.name: trip.passenger_count,
+                Trip.trip_distance.name: float(trip.trip_distance),
+                Trip.fare_amount.name: float(trip.fare_amount),
+                Trip.pu_location_id.name: trip.pu_location_id,
+                Trip.do_location_id.name: trip.do_location_id,
+            }
+            for trip in trips
+        ],
+        headers={
+            "Content-Type": "application/json",
+            "accept": "application/json",
+        }
+    )
