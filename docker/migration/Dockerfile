@@ -2,7 +2,7 @@ FROM python:3.12.5-slim
 
 RUN apt update && apt install -y vim postgresql-client
 
-COPY ./docker/alembic/requirements.txt /tmp
+COPY ./docker/migration/requirements.txt /tmp
 
 RUN pip install -r /tmp/requirements.txt
 
@@ -20,6 +20,6 @@ USER ${USER}
 
 WORKDIR /app
 
-COPY ./docker/alembic/*.sh .
+COPY ./docker/migration/upgrade /usr/bin
 
-ENTRYPOINT ["./install.sh"]
+COPY ./docker/migration/downgrade /usr/bin

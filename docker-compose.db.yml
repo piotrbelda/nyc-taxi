@@ -28,7 +28,7 @@ services:
     hostname: migration
     build:
       context: .
-      dockerfile: ./docker/alembic/Dockerfile
+      dockerfile: ./docker/migration/Dockerfile
     env_file:
       - ./env/db.env
       - ./env/airflow.env
