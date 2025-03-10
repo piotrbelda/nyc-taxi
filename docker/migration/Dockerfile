@@ -23,8 +23,6 @@ USER ${USER}
 
 WORKDIR /app
 
-COPY ./docker/migration/upgrade /usr/bin
-
-COPY ./docker/migration/downgrade /usr/bin
+COPY ./docker/migration/upgrade ./docker/migration/downgrade /usr/bin/
 
 COPY ./alembic/data/road.gpkg /tmp/
