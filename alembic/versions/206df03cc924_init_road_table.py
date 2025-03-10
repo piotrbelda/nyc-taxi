@@ -34,5 +34,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index('idx_road_geom', table_name='road', schema='data', postgresql_using='gist')
     op.drop_table('road', schema='data')

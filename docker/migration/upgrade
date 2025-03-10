@@ -2,5 +2,9 @@
 
 alembic upgrade head
 
+DB_SCHEMA=data
 export PGPASSWORD=${DB_PASSWORD}
-psql -U ${DB_USER} -h ${DB_HOST} -p ${DB_PORT} -d ${DB_NAME} -v schema=data -f $(pwd)/sql/install.sql
+psql -U ${DB_USER} -h ${DB_HOST} -p ${DB_PORT} -d ${DB_NAME} -v schema=${DB_SCHEMA} -f $(pwd)/sql/install.sql
+
+ogr2ogr -f "PostgreSQL" PG:"dbname=${DB_NAME} user=${DB_USER} password=${DB_PASSWORD} host=${DB_HOST} port=${DB_PORT}" \
+    /tmp/road.gpkg -nln "${DB_SCHEMA}.road" -overwrite

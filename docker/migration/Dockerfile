@@ -1,6 +1,9 @@
 FROM python:3.12.5-slim
 
-RUN apt update && apt install -y vim postgresql-client
+# added explicitly for GDAL
+RUN echo "deb http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
+
+RUN apt update && apt install -y vim postgresql-client gdal-bin
 
 COPY ./docker/migration/requirements.txt /tmp
 
@@ -23,3 +26,5 @@ WORKDIR /app
 COPY ./docker/migration/upgrade /usr/bin
 
 COPY ./docker/migration/downgrade /usr/bin
+
+COPY ./alembic/data/road.gpkg /tmp/
