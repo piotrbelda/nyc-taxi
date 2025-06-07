@@ -1,9 +1,10 @@
 from geoalchemy2 import Geometry
 from sqlalchemy import Column, ForeignKey, Index, Integer, Numeric, DateTime, Boolean
 
+from ..config.env import TAXI_SCHEMA
 from ..model import Base
 from ..model.location import Location
-from ..config.env import TAXI_SCHEMA
+from ..utils.consts import GeometryType
 
 
 class Trip(Base):
@@ -35,7 +36,7 @@ class Trip(Base):
     airport_fee = Column(Numeric(10, 2))
     geom = Column(
         Geometry(
-            geometry_type="LINESTRING",
+            geometry_type=GeometryType.LINESTRING.value,
             srid=4326,
             spatial_index=True,
             nullable=True,

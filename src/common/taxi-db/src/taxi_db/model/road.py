@@ -1,8 +1,9 @@
 from sqlalchemy import Column, Integer, Text, VARCHAR
 from geoalchemy2 import Geometry
 
-from ..model import Base
 from ..config.env import TAXI_SCHEMA
+from ..model import Base
+from ..utils.consts import GeometryType
 
 
 class Road(Base):
@@ -19,7 +20,7 @@ class Road(Base):
     type = Column(VARCHAR(length=1), nullable=True)
     geom = Column(
         Geometry(
-            geometry_type="LINESTRING",
+            geometry_type=GeometryType.LINESTRING.value,
             srid=4326,
             spatial_index=True,
             nullable=True,

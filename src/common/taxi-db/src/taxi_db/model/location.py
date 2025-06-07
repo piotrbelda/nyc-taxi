@@ -1,8 +1,9 @@
 from sqlalchemy import Column, CheckConstraint, Integer, Text, UniqueConstraint
 from geoalchemy2 import Geometry
 
-from ..model import Base
 from ..config.env import TAXI_SCHEMA
+from ..model import Base
+from ..utils.consts import GeometryType
 
 
 class Location(Base):
@@ -18,7 +19,7 @@ class Location(Base):
     borough = Column(Text, nullable=False)
     geom = Column(
         Geometry(
-            geometry_type="MULTIPOLYGON",
+            geometry_type=GeometryType.MULTIPOLYGON.value,
             srid=4326,
             spatial_index=True,
             nullable=True,
