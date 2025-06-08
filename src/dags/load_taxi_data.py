@@ -82,8 +82,11 @@ def upload_file(file_path: Path, session: Session) -> dict:
         parquet = ParquetFile(file_path)
         for batch_num, batch in enumerate(parquet.iter_batches(batch_size=20000), start=1):
             trip_df: pd.DataFrame = batch.to_pandas()
+            trip_df = trip_df.iloc[:, :len(TAXI_COLUMNS)]
             trip_df.columns = TAXI_COLUMNS
+
             location_df = get_locations_df(session)
+
             df = pd.merge(trip_df, location_df, how='inner', left_on=Trip.pu_location_id.name, right_on=Location.id.name)
             df = pd.merge(df, location_df, how='inner', left_on=Trip.do_location_id.name, right_on=Location.id.name)
             df = df[TAXI_COLUMNS]
