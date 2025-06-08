@@ -5,12 +5,29 @@ CREATE OR REPLACE FUNCTION trip_recalculate()
     LANGUAGE plpgsql
     SET search_path TO :schema, public AS
     $$
+        DECLARE
+            v_start_location_id INT;
+            v_end_location_id   INT;
+            v_trip_distance     NUMERIC;
         BEGIN
             IF NEW.geom IS NOT NULL THEN -- case when trip is defined manually in QGIS
-                NEW.trip_distance = (SELECT ROUND((ST_Length(ST_Transform(NEW.geom, 3857)) / 1000)::NUMERIC, 2));
-                NEW.pu_location_id = (SELECT l.id FROM "location" l WHERE ST_Within(ST_StartPoint(NEW.geom), l.geom));
-                NEW.do_location_id = (SELECT l.id FROM "location" l WHERE ST_Within(ST_EndPoint(NEW.geom), l.geom));
+                SELECT
+                    sl.id,
+                    el.id,
+                    SELECT ROUND((ST_Length(ST_Transform(NEW.geom, 3857)) / 1000)::NUMERIC, 2)
+                INTO
+                    v_start_location_id,
+                    v_end_location_id,
+                    v_trip_distance
+                FROM trip t
+                LEFT JOIN location sl ON ST_Within(ST_StartPoint(NEW.geom), sl.geom)
+                LEFT JOIN location el ON ST_Within(ST_EndPoint(NEW.geom), el.geom);
+
+                NEW.trip_distance = v_trip_distance;
+                NEW.pu_location_id = v_start_location_id;
+                NEW.do_location_id = v_end_location_id;
             END IF;
+
             RETURN NEW;
         END;
     $$;
