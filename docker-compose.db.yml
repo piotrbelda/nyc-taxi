@@ -3,6 +3,7 @@ name: db
 services:
   db:
     container_name: db
+    profiles: [db, airflow]
     hostname: db
     image: postgis/postgis:latest
     environment:
@@ -25,6 +26,7 @@ services:
 
   migration:
     container_name: migration
+    profiles: [db]
     hostname: migration
     build:
       context: .
@@ -42,6 +44,7 @@ services:
 
   redis:
     container_name: redis
+    profiles: [db, airflow]
     hostname: redis
     image: redis:7.2-bookworm
     expose:

@@ -3,6 +3,7 @@ name: services
 services:
   mlflow:
     container_name: mlflow
+    profiles: [services]
     hostname: mlflow
     build:
       dockerfile: Dockerfile
@@ -17,6 +18,7 @@ services:
 
   backend:
     container_name: backend
+    profiles: [services]
     hostname: backend
     build:
       dockerfile: ./docker/backend/Dockerfile
@@ -35,6 +37,7 @@ services:
 
   frontend:
     container_name: frontend
+    profiles: [services]
     hostname: frontend
     build:
       dockerfile: ./docker/frontend/Dockerfile
@@ -51,6 +54,7 @@ services:
 
   grafana:
     container_name: grafana
+    profiles: [services]
     hostname: grafana
     user: "472"
     image: grafana/grafana
