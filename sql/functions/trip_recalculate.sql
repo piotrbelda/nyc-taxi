@@ -14,7 +14,7 @@ CREATE OR REPLACE FUNCTION trip_recalculate()
                 SELECT
                     sl.id,
                     el.id,
-                    SELECT ROUND((ST_Length(ST_Transform(NEW.geom, 3857)) / 1000)::NUMERIC, 2)
+                    ROUND((ST_Length(ST_Transform(NEW.geom, 3857)) / 1000)::NUMERIC, 2)
                 INTO
                     v_start_location_id,
                     v_end_location_id,
