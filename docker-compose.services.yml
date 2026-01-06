@@ -3,6 +3,7 @@ name: services
 services:
   mlflow:
     container_name: mlflow
+    image: mlflow
     profiles: [services]
     hostname: mlflow
     build:
@@ -18,6 +19,7 @@ services:
 
   backend:
     container_name: backend
+    image: backend
     profiles: [services]
     hostname: backend
     build:
@@ -37,6 +39,7 @@ services:
 
   frontend:
     container_name: frontend
+    image: frontend
     profiles: [services]
     hostname: frontend
     build:
@@ -54,10 +57,10 @@ services:
 
   grafana:
     container_name: grafana
+    image: grafana/grafana
     profiles: [services]
     hostname: grafana
     user: "472"
-    image: grafana/grafana
     volumes:
       - ./src/config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
     ports:
