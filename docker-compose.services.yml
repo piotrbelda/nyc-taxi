@@ -29,6 +29,7 @@ services:
       - ./env/airflow.env
       - ./env/db.env
       - ./env/mlflow.env
+      - ./env/backend.env
     volumes:
       - ./src/app/backend/:/app
     command: fastapi dev --port 7000 --host 0.0.0.0 --reload main.py
