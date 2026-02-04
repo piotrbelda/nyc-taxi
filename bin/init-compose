@@ -5,6 +5,10 @@ AVAILABLE_COMPOSES=(airflow db services)
 printf -v COMPOSE_AGG 'docker-compose.%s.yml:' "${AVAILABLE_COMPOSES[@]}"
 export COMPOSE_FILE="${COMPOSE_AGG%:}"
 
+cat << EOF
+Setting: ${COMPOSE_FILE} as compose source!
+EOF
+
 export AIRFLOW_UID=$(id -u)
 export AIRFLOW_GID=0
 export AIRFLOW_PROJ_DIR="$(pwd)/src"
