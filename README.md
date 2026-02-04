@@ -2,4 +2,7 @@
 
 Taxi trip duration prediction model.
 
-TEST2!
+Initialize compose file:
+```
+. bin/init-compose
+```
